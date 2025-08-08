@@ -1,13 +1,11 @@
-FROM node
+FROM node:18-alpine
 
 WORKDIR /app/shopping
 
-COPY package.json .
+COPY . .
 
 RUN npm install
 
-COPY . .
-
-EXPOSE 8003
+EXPOSE 8001
 
 CMD ["npm", "start"]
