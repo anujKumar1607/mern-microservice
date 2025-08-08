@@ -39,8 +39,6 @@ services:
     depends_on:
       - "nosql-db"
       - "rabbitmq"
-    volumes:
-      - .:/app
     env_file:
       - ./products/.env.dev
     networks:
@@ -56,8 +54,6 @@ services:
     depends_on:
       - "nosql-db"
       - "rabbitmq"
-    volumes:
-      - .:/app
     env_file:
       - ./shopping/.env.dev
     networks:
