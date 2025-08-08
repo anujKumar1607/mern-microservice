@@ -1,14 +1,14 @@
 version: "3"
 services:
-  api-gateway:
-    build:
-      context: ./gateway
-    ports:
-      - "8000:8000"
-    depends_on:
-      - customer
-      - shopping
-      - products
+  # api-gateway:
+  #   build:
+  #     context: ./gateway
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - customer
+  #     - shopping
+  #     - products
 
   nosql-db:
     image: mvertes/alpine-mongo
@@ -67,16 +67,16 @@ services:
       - "rabbitmq"
     env_file:
       - ./customer/.env.dev
-  # nginx-proxy:
-  #   build:
-  #     dockerfile: Dockerfile
-  #     context: ./proxy
-  #   depends_on:
-  #     - products
-  #     - shopping
-  #     - customer
-  #   ports:
-  #     - 80:80
+  nginx-proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./proxy
+    depends_on:
+      - products
+      - shopping
+      - customer
+    ports:
+      - 80:80
 networks:
   mern-network:
     driver: bridge
