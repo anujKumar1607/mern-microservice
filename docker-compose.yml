@@ -1,15 +1,15 @@
 version: "3"
 services:
-  api-gateway:
-    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/api-gateway:latest
-    # build:
-    #   context: ./gateway
-    ports:
-      - "8000:8000"
-    depends_on:
-      - customer
-      - shopping
-      - products
+  # api-gateway:
+  #   image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/api-gateway:latest
+  #   # build:
+  #   #   context: ./gateway
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - customer
+  #     - shopping
+  #     - products
 
   nosql-db:
     image: mvertes/alpine-mongo

@@ -14,9 +14,16 @@ aws ecr get-login-password --region ap-south-1 \
 docker tag my-app:latest 123456789012.dkr.ecr.ap-south-1.amazonaws.com/my-repo:latest
 
 Push to ECR
-docker push 123456789012.dkr.ecr.ap-south-1.amazonaws.com/my-repo:latest
+docker push docker push 123456789012.dkr.ecr.ap-south-1.amazonaws.com/customer-service:latest
 
 make git commit and push
 
 On EC2 Server
 docker-compose pull && docker-compose up -d
+
+check which container is runnig or not
+docker ps -a
+
+check logs
+
+docker logs <service-name>
