@@ -1,14 +1,15 @@
 version: "3"
 services:
-  # api-gateway:
-  #   build:
-  #     context: ./gateway
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - customer
-  #     - shopping
-  #     - products
+  api-gateway:
+    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/api-gateway:latest
+    # build:
+    #   context: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - customer
+      - shopping
+      - products
 
   nosql-db:
     image: mvertes/alpine-mongo
@@ -29,9 +30,10 @@ services:
       - mern-network
 
   products:
-    build:
-      dockerfile: Dockerfile
-      context: ./products
+    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/products:latest
+    # build:
+    #   dockerfile: Dockerfile
+    #   context: ./products
     container_name: products
     ports:
       - "8002:8002"
@@ -44,9 +46,10 @@ services:
     networks:
       - mern-network
   shopping:
-    build:
-      dockerfile: Dockerfile
-      context: ./shopping
+    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/shopping:latest
+    # build:
+    #   dockerfile: Dockerfile
+    #   context: ./shopping
     container_name: shopping
     ports:
       - "8003:8003"
@@ -59,9 +62,10 @@ services:
     networks:
       - mern-network
   customer:
-    build:
-      dockerfile: Dockerfile
-      context: ./customer
+    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/customer-service:latest
+    # build:
+    #   dockerfile: Dockerfile
+    #   context: ./customer
     container_name: customer
     ports:
       - "8001:8001"
@@ -74,9 +78,10 @@ services:
     networks:
       - mern-network
   nginx-proxy:
-    build:
-      dockerfile: Dockerfile
-      context: ./proxy
+    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/proxy:latest
+    # build:
+    #   dockerfile: Dockerfile
+    #   context: ./proxy
     depends_on:
       - products
       - shopping
