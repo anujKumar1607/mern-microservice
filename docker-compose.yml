@@ -1,15 +1,17 @@
 version: "3"
 services:
-  # api-gateway:
-  #   image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/api-gateway:latest
-  #   # build:
-  #   #   context: ./gateway
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - customer
-  #     - shopping
-  #     - products
+  api-gateway:
+    # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/api-gateway:latest
+    build:
+      context: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - customer
+      - shopping
+      - products
+    networks:
+      - mern-network
 
   nosql-db:
     image: mvertes/alpine-mongo
@@ -21,19 +23,31 @@ services:
     networks:
       - mern-network
 
+  # # rabbitmq:
+  # #   image: rabbitmq:alpine
+  # #   container_name: rabbitmq
+  # #   ports:
+  # #     - '5672:5672'
+  # #   networks:
+  # #     - mern-network
+
   rabbitmq:
-    image: rabbitmq:alpine
+    image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - '5672:5672'
+      - "5672:5672"     # AMQP (message broker port)
+      - "15672:15672"   # RabbitMQ Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     networks:
       - mern-network
 
   products:
-    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/products:latest
-    # build:
-    #   dockerfile: Dockerfile
-    #   context: ./products
+    # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/products:latest
+    build:
+      dockerfile: Dockerfile
+      context: ./products
     container_name: products
     ports:
       - "8002:8002"
@@ -46,10 +60,10 @@ services:
     networks:
       - mern-network
   shopping:
-    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/shopping:latest
-    # build:
-    #   dockerfile: Dockerfile
-    #   context: ./shopping
+    # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/shopping:latest
+    build:
+      dockerfile: Dockerfile
+      context: ./shopping
     container_name: shopping
     ports:
       - "8003:8003"
@@ -62,10 +76,10 @@ services:
     networks:
       - mern-network
   customer:
-    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/customer-service:latest
-    # build:
-    #   dockerfile: Dockerfile
-    #   context: ./customer
+    # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/customer-service:latest
+    build:
+      dockerfile: Dockerfile
+      context: ./customer
     container_name: customer
     ports:
       - "8001:8001"
@@ -77,19 +91,19 @@ services:
       - ./customer/.env.dev
     networks:
       - mern-network
-  nginx-proxy:
-    image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/proxy:latest
-    # build:
-    #   dockerfile: Dockerfile
-    #   context: ./proxy
-    depends_on:
-      - products
-      - shopping
-      - customer
-    ports:
-      - 80:80
-    networks:
-      - mern-network
+  # nginx-proxy:
+  #   # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/proxy:latest
+  #   build:
+  #     dockerfile: Dockerfile
+  #     context: ./proxy
+  #   depends_on:
+  #     - products
+  #     - shopping
+  #     - customer
+  #   ports:
+  #     - 80:80
+  #   networks:
+  #     - mern-network
 networks:
   mern-network:
     driver: bridge

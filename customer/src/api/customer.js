@@ -3,13 +3,12 @@ const  UserAuth = require('./middlewares/auth');
 const { SubscribeMessage } = require('../utils');
 
 
-//module.exports = (app, channel) => {
-module.exports = (app) => {
+module.exports = (app, channel) => {
     
     const service = new CustomerService();
 
     // To listen
-    //SubscribeMessage(channel, service);
+    SubscribeMessage(channel, service);
 
 
     app.post('/signup', async (req,res,next) => {
