@@ -4,15 +4,15 @@ const  UserAuth = require('./middlewares/auth');
 const { CUSTOMER_SERVICE } = require('../config');
 const { PublishMessage } = require('../utils')
 
-//module.exports = (app, channel) => {
-module.exports = (app) => {
+module.exports = (app, channel) => {
+// module.exports = (app) => {
     
     const service = new ShoppingService();
 
-    //SubscribeMessage(channel, service)
+    SubscribeMessage(channel, service)
 
     app.post('/order',UserAuth, async (req,res,next) => {
-
+        console.log("order is going to place....")
         const { _id } = req.user;
         const { txnNumber } = req.body;
 
@@ -20,8 +20,8 @@ module.exports = (app) => {
         
         const payload = await service.GetOrderPayload(_id, data, 'CREATE_ORDER')
 
-        // PublishCustomerEvent(payload)
-        //PublishMessage(channel,CUSTOMER_SERVICE, JSON.stringify(payload))
+        PublishCustomerEvent(payload)
+        PublishMessage(channel,CUSTOMER_SERVICE, JSON.stringify(payload))
 
         res.status(200).json(data);
 

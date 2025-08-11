@@ -11,11 +11,11 @@ module.exports = async (app) => {
     app.use(express.static(__dirname + '/public'))
  
     //api
-    // appEvents(app);
+    appEvents(app);
 
-    // const channel = await CreateChannel()
+    const channel = await CreateChannel()
 
-    shopping(app);
+    shopping(app, channel);
     // error handling
     
 }
