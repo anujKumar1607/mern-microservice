@@ -16,8 +16,6 @@ class ProductRepository {
         const productResult = await product.save();
         return productResult;
     }
-
-
      async Products(){
         return await ProductModel.find();
     }
@@ -39,6 +37,7 @@ class ProductRepository {
         const products = await ProductModel.find().where('_id').in(selectedIds.map(_id => _id)).exec();
         return products;
     }
+    
     
 }
 

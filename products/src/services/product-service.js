@@ -66,6 +66,21 @@ class ProductService {
         }
 
     }
+
+    async ManageProductInventory(productId, qty){
+        console.log("productId, qty", productId, qty)
+         const product = await this.repository.FindById(productId);
+
+        if(product){
+            const remainQuantity = product.unit - qty;
+             product.unit = remainQuantity;
+             await product.save();
+             //return FormateData(product)
+        }else{
+            return FormateData({error: 'No product Available'});
+        }
+
+    }
  
 
 }

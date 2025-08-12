@@ -38,7 +38,6 @@ class ShoppingRepository {
                 let isExist = false;
 
                 let cartItems = cart.items;
-console.log("cart", cartItems);
 
                 if(cartItems.length > 0){
 

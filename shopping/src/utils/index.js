@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const amqplib = require("amqplib");
+const axios = require('axios');
 
 const {
   APP_SECRET,
@@ -94,4 +95,20 @@ module.exports.SubscribeMessage = async (channel, service) => {
       noAck: true,
     }
   );
+};
+
+module.exports.PublishCustomerEvent = async (payload) => {
+  // axios.post('http://gateway:8000/shopping/app-events/',{
+  //         payload
+  // });
+
+  axios.post(`http://customer:8001/app-events/`, {
+    payload,
+  });
+};
+
+module.exports.PublishProductsEvent = async (payload) => {
+  axios.post(`http://products:8002/app-events/`, {
+    payload,
+  });
 };
