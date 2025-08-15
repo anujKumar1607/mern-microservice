@@ -1,7 +1,7 @@
 const ShoppingService = require("../services/shopping-service");
 const { PublishCustomerEvent, SubscribeMessage, PublishProductsEvent } = require("../utils");
 const  UserAuth = require('./middlewares/auth');
-const { CUSTOMER_SERVICE } = require('../config');
+const { CUSTOMER_SERVICE, PRODUCT_SERVICE } = require('../config');
 const { PublishMessage } = require('../utils')
 
 module.exports = (app, channel) => {
@@ -22,7 +22,8 @@ module.exports = (app, channel) => {
 
         PublishCustomerEvent(payload)
         PublishProductsEvent(payload);
-        PublishMessage(channel,CUSTOMER_SERVICE, JSON.stringify(payload))
+        PublishMessage(channel,CUSTOMER_SERVICE, JSON.stringify(payload));
+        PublishMessage(channel,PRODUCT_SERVICE, JSON.stringify(payload));
 
         res.status(200).json(data);
 

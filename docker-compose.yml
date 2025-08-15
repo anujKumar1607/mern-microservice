@@ -1,5 +1,13 @@
 version: "3"
 services:
+  consul:
+      image: consul:1.15
+      command: agent -dev -client=0.0.0.0
+      ports:
+        - "8500:8500"   # Consul UI/API
+        - "8600:8600/udp"
+      networks:
+        - mern-network
   api-gateway:
     # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/api-gateway:latest
     build:
@@ -12,6 +20,9 @@ services:
       - products
     networks:
       - mern-network
+    environment:
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
 
   nosql-db:
     image: mvertes/alpine-mongo
@@ -59,6 +70,10 @@ services:
       - ./products/.env.dev
     networks:
       - mern-network
+    environment:
+      - PORT=8002
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
   shopping:
     # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/shopping:latest
     build:
@@ -75,6 +90,10 @@ services:
       - ./shopping/.env.dev
     networks:
       - mern-network
+    environment:
+      - PORT=8003
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
   customer:
     # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/customer-service:latest
     build:
@@ -82,7 +101,7 @@ services:
       context: ./customer
     container_name: customer
     ports:
-      - "8001:8001"
+      - "8001"
     restart: always
     depends_on:
       - "nosql-db"
@@ -91,6 +110,10 @@ services:
       - ./customer/.env.dev
     networks:
       - mern-network
+    environment:
+      - PORT=8001
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
   # nginx-proxy:
   #   # image: 349263039941.dkr.ecr.us-east-1.amazonaws.com/dukaan/proxy:latest
   #   build:

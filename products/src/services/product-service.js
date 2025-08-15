@@ -8,7 +8,6 @@ class ProductService {
         this.repository = new ProductRepository();
     }
     
-
     async CreateProduct(productInputs){
 
         const productResult = await this.repository.CreateProduct(productInputs)
@@ -80,6 +79,29 @@ class ProductService {
             return FormateData({error: 'No product Available'});
         }
 
+    }
+
+    async ManageProductInventoryItems(items){
+        console.log("items",items)
+        items.forEach(async (i) => {
+            await this.ManageProductInventory(i.product._id, i.unit)
+        });
+    }
+
+    async SubscribeEvents(payload){
+ 
+        payload = JSON.parse(payload);
+        const { event, data } = payload;
+        const { items } = data.order;
+        
+        switch(event){
+            case 'CREATE_ORDER':
+                this.ManageProductInventoryItems(items);
+                break;
+            default:
+                break;
+        }
+ 
     }
  
 

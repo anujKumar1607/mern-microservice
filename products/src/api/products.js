@@ -4,11 +4,15 @@ const {
   PublishCustomerEvent,
   PublishShoppingEvent,
   PublishMessage,
+  SubscribeMessage
 } = require("../utils");
 const UserAuth = require("./middlewares/auth");
 
 module.exports = (app, channel) => {
   const service = new ProductService();
+
+  // To listen
+  SubscribeMessage(channel, service);
 
   app.post("/product/create", async (req, res, next) => {
     const { name, desc, type, unit, price, available, suplier, banner } =
@@ -64,8 +68,8 @@ module.exports = (app, channel) => {
       "ADD_TO_WISHLIST"
     );
 
-    PublishCustomerEvent(data);
-    PublishMessage(channel, CUSTOMER_SERVICE, JSON.stringify(data));
+    PublishCustomerEvent(JSON.stringify(data));
+    //PublishMessage(channel, CUSTOMER_SERVICE, JSON.stringify(data));
 
     res.status(200).json(data.data.product);
   });

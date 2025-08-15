@@ -2,10 +2,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const amqplib = require("amqplib");
+const CircuitBreaker = require('opossum');
 
 const {
   APP_SECRET,
   BASE_URL,
+  PRODUCT_SERVICE,
   EXCHANGE_NAME,
   MSG_QUEUE_URL,
 } = require("../config");
@@ -58,14 +60,15 @@ module.exports.FormateData = (data) => {
 };
 
 //Raise Events
-module.exports.PublishCustomerEvent = async (payload) => {
-  axios.post("http://customer:8001/app-events/", {
-    payload,
-  });
+module.exports.callCustomerService = async (payload) => {
+  // axios.post("http://customer:8001/app-events/", {
+  //   payload,
+  // });
 
-  //     axios.post(`${BASE_URL}/customer/app-events/`,{
-  //         payload
-  //     });
+  const url = `http://customer:8001/app-events/`;
+  console.log("url", url)
+  const response = await axios.post(url, {payload});
+  return response.data;
 };
 
 module.exports.PublishShoppingEvent = async (payload) => {
@@ -94,4 +97,53 @@ module.exports.CreateChannel = async () => {
 module.exports.PublishMessage = (channel, service, msg) => {
   channel.publish(EXCHANGE_NAME, service, Buffer.from(msg));
   console.log("Sent: ", msg);
+};
+
+module.exports.SubscribeMessage = async (channel, service) => {
+  await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
+  const q = await channel.assertQueue("", { exclusive: true });
+  console.log(` Waiting for messages in queue: ${q.queue}`);
+
+  channel.bindQueue(q.queue, EXCHANGE_NAME, PRODUCT_SERVICE);
+
+  channel.consume(
+    q.queue,
+    (msg) => {
+      if (msg.content) {
+        console.log("the message is pp:", msg.content.toString());
+        service.SubscribeEvents(msg.content.toString());
+      }
+      console.log("[X] received pp");
+    },
+    {
+      noAck: true,
+    }
+  );
+};
+
+
+// Circuit breaker options
+const breakerOptions = {
+    timeout: 5000, // If it takes longer than 5 seconds, fail
+    errorThresholdPercentage: 50, // When 50% of requests fail...
+    resetTimeout: 10000 // ...wait 10s before trying again
+};
+
+// Create breaker
+const breaker = new CircuitBreaker(this.callCustomerService, breakerOptions);
+
+breaker.fallback(() => {
+    return { message: 'Customer service unavailable, using fallback data' };
+});
+
+
+module.exports.PublishCustomerEvent = async (customerId) => {
+  try {
+    const customer = await breaker.fire(customerId);
+    console.log('Customer data:', customer);
+    return customer;
+  } catch (err) {
+    console.error('Breaker error:', err.message);
+    return { message: 'Customer service unavailable, using fallback data' };
+  }
 };
