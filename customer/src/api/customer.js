@@ -2,6 +2,9 @@ const CustomerService = require('../services/customer-service');
 const  UserAuth = require('./middlewares/auth');
 const { SubscribeMessage } = require('../utils');
 
+const { expressjwt } = require('express-jwt')
+const jwksRsa = require('jwks-rsa')
+
 
 module.exports = (app, channel) => {
     
@@ -9,7 +12,17 @@ module.exports = (app, channel) => {
 
     // To listen
     SubscribeMessage(channel, service);
-
+    const checkJwt = expressjwt({
+        secret: jwksRsa.expressJwtSecret({
+            jwksUri: new URL('/.well-known/jwks.json', process.env.AUTH0_ISSUER_BASE_URL).toString(),
+            cache: true,
+            rateLimit: true,
+            jwksRequestsPerMinute: 10
+        }),
+        audience: process.env.AUTH0_AUDIENCE,
+        issuer: process.env.AUTH0_ISSUER_BASE_URL, // must end with trailing slash
+        algorithms: ['RS256']
+    })
 
     app.post('/signup', async (req,res,next) => {
         const { email, password, phone } = req.body;
@@ -41,7 +54,7 @@ module.exports = (app, channel) => {
 
     });
      
-    app.get('/profile', UserAuth ,async (req,res,next) => {
+    app.get('/profile', checkJwt ,async (req,res,next) => {
 
         const { _id } = req.user;
         const { data } = await service.GetProfile({ _id });

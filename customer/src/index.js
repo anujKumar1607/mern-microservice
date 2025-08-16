@@ -20,6 +20,9 @@ const StartServer = async() => {
     
     await databaseConnection();
 
+    app.use(cors({ origin: ['http://localhost:5173'], credentials: true }))
+    app.use(express.json())
+
      // Health check endpoint for Consul
     app.get('/health', (req, res) => res.sendStatus(200));
 
