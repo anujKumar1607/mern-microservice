@@ -11,7 +11,7 @@ const CONSUL_PORT = process.env.CONSUL_PORT || 8500;
 const SERVICE_NAME = 'customer';
 const SERVICE_ID = `${SERVICE_NAME}-${uuidv4()}`;
 const SERVICE_ADDRESS = process.env.HOSTNAME || os.hostname(); // in Docker network the container name resolves; otherwise use host IP
-
+import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
 
 
 const StartServer = async() => {
@@ -20,7 +20,8 @@ const StartServer = async() => {
     
     await databaseConnection();
 
-    app.use(cors({ origin: ['http://localhost:5173'], credentials: true }))
+    // app.use(cors({ origin: ['http://localhost:5173'], credentials: true }))
+    app.use(cors({ origin: process.env.WEB_ORIGIN, credentials: true }));
     app.use(express.json())
 
      // Health check endpoint for Consul

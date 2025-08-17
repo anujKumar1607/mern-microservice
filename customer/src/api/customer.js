@@ -3,7 +3,8 @@ const  UserAuth = require('./middlewares/auth');
 const { SubscribeMessage } = require('../utils');
 
 const { expressjwt } = require('express-jwt')
-const jwksRsa = require('jwks-rsa')
+const jwksRsa = require('jwks-rsa');
+import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
 
 
 module.exports = (app, channel) => {
@@ -12,17 +13,32 @@ module.exports = (app, channel) => {
 
     // To listen
     SubscribeMessage(channel, service);
-    const checkJwt = expressjwt({
-        secret: jwksRsa.expressJwtSecret({
-            jwksUri: new URL('/.well-known/jwks.json', process.env.AUTH0_ISSUER_BASE_URL).toString(),
-            cache: true,
-            rateLimit: true,
-            jwksRequestsPerMinute: 10
-        }),
-        audience: process.env.AUTH0_AUDIENCE,
-        issuer: process.env.AUTH0_ISSUER_BASE_URL, // must end with trailing slash
-        algorithms: ['RS256']
-    })
+    // const checkJwt = expressjwt({
+    //     secret: jwksRsa.expressJwtSecret({
+    //         jwksUri: new URL('/.well-known/jwks.json', process.env.AUTH0_ISSUER_BASE_URL).toString(),
+    //         cache: true,
+    //         rateLimit: true,
+    //         jwksRequestsPerMinute: 10
+    //     }),
+    //     audience: process.env.AUTH0_AUDIENCE,
+    //     issuer: process.env.AUTH0_ISSUER_BASE_URL, // must end with trailing slash
+    //     algorithms: ['RS256']
+    // })
+
+    //OAuth Implementation
+
+    // 1) Verify the Auth0 access token for your API
+
+        const checkJwt = auth({
+            audience: process.env.AUTH0_AUDIENCE,
+            issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}/`,
+            tokenSigningAlg: 'RS256',
+        });
+
+        // 2) Optional: check required scopes per route
+        const needProfileRead = requiredScopes('read:profile');
+
+    //End
 
     app.post('/signup', async (req,res,next) => {
         const { email, password, phone } = req.body;
