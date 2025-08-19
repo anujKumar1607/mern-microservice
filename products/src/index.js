@@ -20,41 +20,46 @@ const StartServer = async() => {
 
     // Health check endpoint for Consul
     app.get('/health', (req, res) => res.sendStatus(200));
+    app.get("/healths", (req, res, next) => {
+        return res
+        .status(200)
+        .json({ msg: "/ or /products : I am products Service" });
+    });
     
     await expressApp(app);
 
-    app.listen(PORT, async () => {
-        console.log(`listening to port ${PORT}`);
-        try {
-            await registerService({
-                name: SERVICE_NAME,
-                id: SERVICE_ID,
-                address: SERVICE_ADDRESS,
-                port: Number(PORT),
-                checkPath: '/health',
-                consulHost: CONSUL_HOST,
-                consulPort: CONSUL_PORT,
-                checkInterval: '10s'
-            });
-            console.log(`✅ Registered ${SERVICE_NAME} in Consul`);
-        } catch (err) {
-            console.error(`❌ Consul registration failed: ${err.message}`);
-        }
-    })
-    .on('error', (err) => {
-        console.log(err);
-        process.exit();
-    })
-
-    // Deregister on shutdown
-    process.on('SIGINT', async () => {
-        await deregisterService(SERVICE_ID, CONSUL_HOST, CONSUL_PORT);
-        process.exit();
-    });
-    process.on('SIGTERM', async () => {
-        await deregisterService(SERVICE_ID, CONSUL_HOST, CONSUL_PORT);
-        process.exit();
-    });
+       app.listen(PORT, async () => {
+           console.log(`listening to port ${PORT}`);
+           try {
+               await registerService({
+                   name: SERVICE_NAME,
+                   id: SERVICE_ID,
+                   address: SERVICE_ADDRESS,
+                   port: Number(PORT),
+                   checkPath: '/health',
+                   consulHost: CONSUL_HOST,
+                   consulPort: CONSUL_PORT,
+                   checkInterval: '10s'
+               });
+               console.log(`✅ Registered ${SERVICE_NAME} in Consul`);
+           } catch (err) {
+               console.error(`❌ Consul registration failed: ${err.message}`);
+           }
+       })
+       .on('error', (err) => {
+           console.log(err);
+           process.exit();
+       });
+   
+       // Deregister on shutdown
+       process.on('SIGINT', async () => {
+           await deregisterService(SERVICE_ID, CONSUL_HOST, CONSUL_PORT);
+           process.exit();
+       });
+       process.on('SIGTERM', async () => {
+           await deregisterService(SERVICE_ID, CONSUL_HOST, CONSUL_PORT);
+           process.exit();
+       });
 
 }
 

@@ -3,7 +3,8 @@ const { PORT } = require('./config');
 const { databaseConnection } = require('./database');
 const expressApp = require('./express-app');
 const { CreateChannel, registerService, deregisterService } = require('./utils');
-
+const client = require("prom-client");
+const cors  = require('cors');
 const os = require('os');
 const { v4: uuidv4 } = require('uuid');
 const CONSUL_HOST = process.env.CONSUL_HOST || 'consul';
@@ -17,8 +18,20 @@ const SERVICE_ADDRESS = process.env.HOSTNAME || os.hostname(); // in Docker netw
 const StartServer = async() => {
 
     const app = express();
+    const register = new client.Registry();
     
     await databaseConnection();
+
+    client.collectDefaultMetrics({ register });
+    // Custom metric: HTTP request duration
+    const httpRequestDurationMicroseconds = new client.Histogram({
+        name: "http_request_duration_seconds",
+        help: "Duration of HTTP requests in seconds",
+        labelNames: ["method", "route", "status_code"],
+        buckets: [0.1, 0.5, 1, 3, 5] // seconds
+    });
+
+    register.registerMetric(httpRequestDurationMicroseconds);
 
     app.use(cors({ origin: ['http://localhost:5173'], credentials: true }))
     app.use(express.json())
@@ -30,6 +43,19 @@ const StartServer = async() => {
 
     await expressApp(app);
     
+    // Middleware to record metrics
+    app.use((req, res, next) => {
+        const end = httpRequestDurationMicroseconds.startTimer();
+        res.on("finish", () => {
+            end({ method: req.method, route: req.route?.path, status_code: res.statusCode });
+        });
+        next();
+    });
+
+    app.get("/metrics", async (req, res) => {
+        res.set("Content-Type", register.contentType);
+        res.end(await register.metrics());
+    });
 
     app.listen(PORT,'0.0.0.0', async () => {
           console.log(`listening to port ${PORT}`);

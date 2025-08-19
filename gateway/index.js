@@ -2,13 +2,13 @@ const express = require("express");
 const cors = require("cors");
 const proxy = require("express-http-proxy");
 const axios = require("axios");
-
+const client = require("prom-client");
 const app = express();
 
 const CONSUL_HOST = process.env.CONSUL_HOST || "consul";
 const CONSUL_PORT = process.env.CONSUL_PORT || 8500;
 
-app.use(cors());
+app.use(cors({ origin: ['http://localhost:5173'], credentials: true }))
 app.use(express.json());
 
 // Function to get healthy instance of a service from Consul
@@ -37,6 +37,32 @@ function dynamicProxy(serviceName) {
     }
   };
 }
+
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+// Custom metric: HTTP request duration
+const httpRequestDurationMicroseconds = new client.Histogram({
+    name: "http_request_duration_seconds",
+    help: "Duration of HTTP requests in seconds",
+    labelNames: ["method", "route", "status_code"],
+    buckets: [0.1, 0.5, 1, 3, 5] // seconds
+});
+
+register.registerMetric(httpRequestDurationMicroseconds);
+// Middleware to record metrics
+app.use((req, res, next) => {
+    const end = httpRequestDurationMicroseconds.startTimer();
+    res.on("finish", () => {
+        end({ method: req.method, route: req.route?.path, status_code: res.statusCode });
+    });
+    next();
+});
+
+app.get("/metrics", async (req, res) => {
+    res.set("Content-Type", register.contentType);
+    res.end(await register.metrics());
+});
 
 app.use("/customer", dynamicProxy("customer"));
 app.use("/shopping", dynamicProxy("shopping"));

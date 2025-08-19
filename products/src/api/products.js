@@ -10,7 +10,7 @@ const UserAuth = require("./middlewares/auth");
 
 module.exports = (app, channel) => {
   const service = new ProductService();
-
+console.log("dsdsdsdsd")
   // To listen
   SubscribeMessage(channel, service);
 

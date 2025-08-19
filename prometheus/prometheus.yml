@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "customer"
+    static_configs:
+      - targets: ["customer:8001"]
+
+  - job_name: "shopping"
+    static_configs:
+      - targets: ["shopping:8003"]
+
+  - job_name: "products"
+    static_configs:
+      - targets: ["products:8002"]
+
+  - job_name: "gateway"
+    static_configs:
+      - targets: ["gateway:8000"]
