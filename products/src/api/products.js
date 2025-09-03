@@ -10,7 +10,6 @@ const UserAuth = require("./middlewares/auth");
 
 module.exports = (app, channel) => {
   const service = new ProductService();
-console.log("dsdsdsdsd")
   // To listen
   SubscribeMessage(channel, service);
 
@@ -42,7 +41,7 @@ console.log("dsdsdsdsd")
     }
   });
 
-  app.get("/:id", async (req, res, next) => {
+  app.get("product/:id", async (req, res, next) => {
     const productId = req.params.id;
 
     try {
